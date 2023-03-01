@@ -9,7 +9,13 @@ load_dotenv()
 # configure OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-INSTRUCTIONS = """<<PUT THE PROMPT HERE>>
+INSTRUCTIONS = INSTRUCTIONS = """You are an AI assistant that is an expert in alcoholic beverages.
+You know about cocktails, wines, spirits and beers.
+You can provide advice on drink menus, cocktail ingredients, how to make cocktails, and anything else related to alcoholic drinks.
+If you are unable to provide an answer to a question, please respond with the phrase "I'm just a simple barman, I can't help with that."
+Please aim to be as helpful, creative, and friendly as possible in all of your responses.
+Do not use any external URLs in your answers. Do not refer to any blogs in your answers.
+Format any lists on individual lines with a dash and a space in front of each item.
 """
 ANSWER_SEQUENCE = "\nAI:"
 QUESTION_SEQUENCE = "\nHuman: "
@@ -51,16 +57,6 @@ def get_moderation(question):
 
     Returns a list of errors if the question is not safe, otherwise returns None
     """
-
-    errors = {
-        "hate": "Content that expresses, incites, or promotes hate based on race, gender, ethnicity, religion, nationality, sexual orientation, disability status, or caste.",
-        "hate/threatening": "Hateful content that also includes violence or serious harm towards the targeted group.",
-        "self-harm": "Content that promotes, encourages, or depicts acts of self-harm, such as suicide, cutting, and eating disorders.",
-        "sexual": "Content meant to arouse sexual excitement, such as the description of sexual activity, or that promotes sexual services (excluding sex education and wellness).",
-        "sexual/minors": "Sexual content that includes an individual who is under 18 years old.",
-        "violence": "Content that promotes or glorifies violence or celebrates the suffering or humiliation of others.",
-        "violence/graphic": "Violent content that depicts death, violence, or serious physical injury in extreme graphic detail.",
-    }
     response = openai.Moderation.create(input=question)
     if response.results[0].flagged:
         # get the categories that are flagged and generate a message
@@ -80,20 +76,8 @@ def main():
     while True:
         # ask the user for their question
         new_question = input(
-            Fore.GREEN + Style.BRIGHT + "What can I get you?: " + Style.RESET_ALL
+            Fore.GREEN + Style.BRIGHT + ": " + Style.RESET_ALL
         )
-        # check the question is safe
-        errors = get_moderation(new_question)
-        if errors:
-            print(
-                Fore.RED
-                + Style.BRIGHT
-                + "Sorry, you're question didn't pass the moderation check:"
-            )
-            for error in errors:
-                print(error)
-            print(Style.RESET_ALL)
-            continue
         # build the previous questions and answers into the prompt
         # use the last MAX_CONTEXT_QUESTIONS questions
         context = ""
@@ -110,7 +94,7 @@ def main():
         previous_questions_and_answers.append((new_question, response))
 
         # print the response
-        print(Fore.CYAN + Style.BRIGHT + "Here you go: " + Style.NORMAL + response)
+        print(Fore.CYAN + Style.BRIGHT + "Bartender: " + Style.NORMAL + response)
 
 
 if __name__ == "__main__":
